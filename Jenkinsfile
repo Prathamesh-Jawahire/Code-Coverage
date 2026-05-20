@@ -12,15 +12,16 @@ pipeline {
         JAVA_PROJECT = "Java/JavaFullstackEcommerce"
 
         CPP_PROJECT = "Cpp"
+
         PYTHON_EXE = 'C:\\Program Files\\Python313\\python.exe'
+
         PYTHON_PARSER = "parser/parser.py"
 
         SONAR_TOKEN = credentials('sonar-token')
+
         CMAKE_EXE = 'C:\\Program Files\\CMake\\bin\\cmake.exe'
 
-        CTEST_EXE = 'C:\\Program Files\\CMake\\bin\\ctest.exe'
-
-        GCOVR_EXE = 'C:\\Program Files\\Python313\\Scripts\\gcovr.exe'
+        CTEST_EXE = 'C:\\msys64\\mingw64\\bin\\ctest.exe'
     }
 
     stages {
@@ -134,87 +135,83 @@ pipeline {
 
         // ============================================
         // CPP BUILD + TEST + COVERAGE
-        // ==========================================
+        // ============================================
+        stage('CPP Build & Coverage') {
 
-    environment {
+            steps {
 
-        CMAKE_EXE = 'C:\\Program Files\\CMake\\bin\\cmake.exe'
+                dir("${CPP_PROJECT}") {
 
-        CTEST_EXE = 'C:\\msys64\\mingw64\\bin\\ctest.exe'
+                    bat """
 
-        GCOVR_EXE = 'C:\\Users\\Prathemesh\\AppData\\Roaming\\Python\\Python313\\Scripts\\gcovr.exe'
-    }
-    stage('CPP Build & Coverage') {
+                    echo ======================================
+                    echo CPP BUILD START
+                    echo ======================================
 
-    steps {
+                    if exist build rmdir /s /q build
 
-        dir("${CPP_PROJECT}") {
+                    mkdir build
 
-            bat """
+                    cd build
 
-            echo ======================================
-            echo CPP BUILD START
-            echo ======================================
+                    echo ======================================
+                    echo CONFIGURING WITH MINGW
+                    echo ======================================
 
-            if exist build rmdir /s /q build
+                    "%CMAKE_EXE%" ^
+                    -G "MinGW Makefiles" ^
+                    -DCMAKE_C_COMPILER=C:/msys64/mingw64/bin/gcc.exe ^
+                    -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe ^
+                    ..
 
-            mkdir build
+                    echo ======================================
+                    echo BUILDING PROJECT
+                    echo ======================================
 
-            cd build
+                    "%CMAKE_EXE%" --build .
 
-            echo ======================================
-            echo USING MINGW GCC
-            echo ======================================
+                    echo ======================================
+                    echo RUNNING TESTS
+                    echo ======================================
 
-            "C:\\Program Files\\CMake\\bin\\cmake.exe" ^
-            -G "MinGW Makefiles" ^
-            -DCMAKE_C_COMPILER=C:/msys64/mingw64/bin/gcc.exe ^
-            -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe ^
-            ..
+                    "%CTEST_EXE%" --output-on-failure
 
-            echo ======================================
-            echo BUILDING PROJECT
-            echo ======================================
+                    echo ======================================
+                    echo SEARCHING COVERAGE FILES
+                    echo ======================================
 
-            "C:\\Program Files\\CMake\\bin\\cmake.exe" --build .
+                    dir /s *.gcda
+                    dir /s *.gcno
 
-            echo ======================================
-            echo RUNNING TESTS
-            echo ======================================
+                    echo ======================================
+                    echo GENERATING GCOVR XML
+                    echo ======================================
 
-            "C:\\Program Files\\CMake\\bin\\ctest.exe" --output-on-failure
+                    "%PYTHON_EXE%" -m gcovr ^
+                    -r .. ^
+                    --xml ^
+                    -o coverage.xml
 
-            echo ======================================
-            echo SEARCHING COVERAGE FILES
-            echo ======================================
+                    echo ======================================
+                    echo GENERATING GCOVR JSON
+                    echo ======================================
 
-            dir /s *.gcda
-            dir /s *.gcno
+                    "%PYTHON_EXE%" -m gcovr ^
+                    -r .. ^
+                    --json ^
+                    -o coverage.json
 
-            echo ======================================
-            echo GENERATING GCOVR REPORTS
-            echo ======================================
+                    echo ======================================
+                    echo VERIFY GENERATED FILES
+                    echo ======================================
 
-            "C:\\Program Files\\Python313\\python.exe" -m gcovr ^
-            -r .. ^
-            --xml ^
-            -o coverage.xml
+                    dir
 
-            "C:\\Program Files\\Python313\\python.exe" -m gcovr ^
-            -r .. ^
-            --json ^
-            -o coverage.json
-
-            echo ======================================
-            echo VERIFY GENERATED FILES
-            echo ======================================
-
-            dir
-
-            """
+                    """
+                }
+            }
         }
-    }
-}
+
         // ============================================
         // VERIFY CPP ARTIFACTS
         // ============================================
@@ -232,21 +229,21 @@ pipeline {
 
         // ============================================
         // GENERATE UNIFIED JSON
-        // ============================================        
+        // ============================================
         stage('Generate Unified JSON') {
 
-    steps {
+            steps {
 
-        bat """
-        "%PYTHON_EXE%" parser/parser.py ^
-        --jacoco_xml Java/JavaFullstackEcommerce/target/site/jacoco/jacoco.xml ^
-        --surefire_dir Java/JavaFullstackEcommerce/target/surefire-reports ^
-        --gcovr_xml Cpp/build/coverage.xml ^
-        --gcovr_json Cpp/build/coverage.json ^
-        --output unified_report.json
-        """
-    }
-}
+                bat """
+                "%PYTHON_EXE%" %PYTHON_PARSER% ^
+                --jacoco_xml Java/JavaFullstackEcommerce/target/site/jacoco/jacoco.xml ^
+                --surefire_dir Java/JavaFullstackEcommerce/target/surefire-reports ^
+                --gcovr_xml Cpp/build/coverage.xml ^
+                --gcovr_json Cpp/build/coverage.json ^
+                --output unified_report.json
+                """
+            }
+        }
 
         // ============================================
         // VERIFY JSON OUTPUT
