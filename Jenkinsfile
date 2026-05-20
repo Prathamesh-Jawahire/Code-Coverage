@@ -181,7 +181,7 @@ pipeline {
             echo RUN CMAKE
             echo ======================================
 
-            "%CMAKE_EXE%" ..
+            "%CMAKE_EXE%" -G "MinGW Makefiles" ..
 
             echo ======================================
             echo BUILD CPP PROJECT
@@ -194,7 +194,13 @@ pipeline {
             echo ======================================
 
             "%CTEST_EXE%" --output-on-failure
+              echo ======================================
+                echo SEARCHING COVERAGE FILES
+                echo ======================================
 
+                dir /s *.gcda
+
+                dir /s *.gcno  
             echo ======================================
             echo GENERATE XML COVERAGE
             echo ======================================
