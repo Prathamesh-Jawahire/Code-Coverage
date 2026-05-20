@@ -234,21 +234,21 @@ pipeline {
 
         // ============================================
         // GENERATE UNIFIED JSON
-        // ============================================
+        // ============================================        
         stage('Generate Unified JSON') {
 
-            steps {
+    steps {
 
-                bat """
-                python %PYTHON_PARSER% ^
-                --jacoco_xml Java/JavaFullstackEcommerce/target/site/jacoco/jacoco.xml ^
-                --surefire_dir Java/JavaFullstackEcommerce/target/surefire-reports ^
-                --gcovr_xml Cpp/build/coverage.xml ^
-                --gcovr_json Cpp/build/coverage.json ^
-                --output unified_report.json
-                """
-            }
-        }
+        bat """
+        "%PYTHON_EXE%" parser/parser.py ^
+        --jacoco_xml Java/JavaFullstackEcommerce/target/site/jacoco/jacoco.xml ^
+        --surefire_dir Java/JavaFullstackEcommerce/target/surefire-reports ^
+        --gcovr_xml Cpp/build/coverage.xml ^
+        --gcovr_json Cpp/build/coverage.json ^
+        --output unified_report.json
+        """
+    }
+}
 
         // ============================================
         // VERIFY JSON OUTPUT
