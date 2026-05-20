@@ -136,82 +136,91 @@ pipeline {
         // ============================================
         // CPP BUILD + TEST + COVERAGE
         // ============================================
-        stage('CPP Build & Coverage') {
+    stage('CPP Build & Coverage') {
 
-            steps {
+    steps {
 
-                dir("${CPP_PROJECT}") {
+        dir("${CPP_PROJECT}") {
 
-                    bat """
+            bat """
 
-                    echo ======================================
-                    echo CPP BUILD START
-                    echo ======================================
+            echo ======================================
+            echo CPP BUILD START
+            echo ======================================
 
-                    if exist build rmdir /s /q build
+            if exist build rmdir /s /q build
 
-                    mkdir build
+            mkdir build
 
-                    cd build
+            cd build
 
-                    echo ======================================
-                    echo CONFIGURING WITH MINGW
-                    echo ======================================
+            echo ======================================
+            echo CONFIGURE PROJECT
+            echo ======================================
 
-                    "%CMAKE_EXE%" ^
-                    -G "MinGW Makefiles" ^
-                    -DCMAKE_C_COMPILER=C:/msys64/mingw64/bin/gcc.exe ^
-                    -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe ^
-                    ..
+            "%CMAKE_EXE%" ^
+            -G "MinGW Makefiles" ^
+            -DCMAKE_BUILD_TYPE=Debug ^
+            -DCMAKE_C_COMPILER=C:/msys64/mingw64/bin/gcc.exe ^
+            -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe ^
+            -DCMAKE_CXX_FLAGS="--coverage -g -O0" ^
+            -DCMAKE_C_FLAGS="--coverage -g -O0" ^
+            ..
 
-                    echo ======================================
-                    echo BUILDING PROJECT
-                    echo ======================================
+            echo ======================================
+            echo BUILD PROJECT
+            echo ======================================
 
-                    "%CMAKE_EXE%" --build .
+            "%CMAKE_EXE%" --build .
 
-                    echo ======================================
-                    echo RUNNING TESTS
-                    echo ======================================
+            echo ======================================
+            echo RUN TESTS
+            echo ======================================
 
-                    "%CTEST_EXE%" --output-on-failure
+            "%CTEST_EXE%" --output-on-failure
 
-                    echo ======================================
-                    echo SEARCHING COVERAGE FILES
-                    echo ======================================
+            echo ======================================
+            echo SEARCH FOR GCDA FILES
+            echo ======================================
 
-                    dir /s *.gcda
-                    dir /s *.gcno
+            dir /s *.gcda
 
-                    echo ======================================
-                    echo GENERATING GCOVR XML
-                    echo ======================================
+            echo ======================================
+            echo SEARCH FOR GCNO FILES
+            echo ======================================
 
-                    "%PYTHON_EXE%" -m gcovr ^
-                    -r .. ^
-                    --xml ^
-                    -o coverage.xml
+            dir /s *.gcno
 
-                    echo ======================================
-                    echo GENERATING GCOVR JSON
-                    echo ======================================
+            echo ======================================
+            echo GENERATE XML COVERAGE
+            echo ======================================
 
-                    "%PYTHON_EXE%" -m gcovr ^
-                    -r .. ^
-                    --json ^
-                    -o coverage.json
+            "%PYTHON_EXE%" -m gcovr ^
+            -r .. ^
+            --xml-pretty ^
+            --exclude-unreachable-branches ^
+            --print-summary ^
+            -o coverage.xml
 
-                    echo ======================================
-                    echo VERIFY GENERATED FILES
-                    echo ======================================
+            echo ======================================
+            echo GENERATE JSON COVERAGE
+            echo ======================================
 
-                    dir
+            "%PYTHON_EXE%" -m gcovr ^
+            -r .. ^
+            --json-summary-pretty ^
+            -o coverage.json
 
-                    """
-                }
-            }
+            echo ======================================
+            echo FINAL BUILD DIRECTORY
+            echo ======================================
+
+            dir
+
+            """
         }
-
+    }
+}
         // ============================================
         // VERIFY CPP ARTIFACTS
         // ============================================
