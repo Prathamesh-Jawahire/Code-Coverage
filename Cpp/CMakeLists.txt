@@ -1,10 +1,20 @@
 cmake_minimum_required(VERSION 3.16)
+
 project(OnlineShoppingSystem CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# =========================================
+# COVERAGE FLAGS
+# =========================================
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage")
+
+# =========================================
+# PROJECT PATHS
+# =========================================
+
 set(SHOPPING_SERVER_DIR ${CMAKE_SOURCE_DIR}/online-shopping-system/Server/Headers)
 
 set(SHOPPING_SOURCES
@@ -18,7 +28,6 @@ set(SHOPPING_SOURCES
     ${SHOPPING_SERVER_DIR}/Thread.cpp
     ${SHOPPING_SERVER_DIR}/Server.cpp
 )
-
 # Production objects (interactive getch / pauses unchanged)
 add_library(shopping_obj_prod OBJECT ${SHOPPING_SOURCES})
 target_include_directories(shopping_obj_prod PUBLIC ${SHOPPING_SERVER_DIR})
