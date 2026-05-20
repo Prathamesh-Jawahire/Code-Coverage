@@ -12,7 +12,7 @@ pipeline {
         JAVA_PROJECT = "Java/JavaFullstackEcommerce"
 
         CPP_PROJECT = "Cpp"
-
+        PYTHON_EXE = 'C:\\Program Files\\Python313\\python.exe'
         PYTHON_PARSER = "parser/parser.py"
 
         SONAR_TOKEN = credentials('sonar-token')
@@ -199,13 +199,13 @@ pipeline {
             echo GENERATE XML COVERAGE
             echo ======================================
 
-            "%GCOVR_EXE%" -x -o coverage.xml
+            "%PYTHON_EXE%" -m gcovr -x -o coverage.xml
 
             echo ======================================
             echo GENERATE JSON COVERAGE
             echo ======================================
 
-            "%GCOVR_EXE%" --json -o coverage.json
+            "%PYTHON_EXE%" -m gcovr --json -o coverage.json
 
             echo ======================================
             echo VERIFY GENERATED FILES
