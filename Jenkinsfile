@@ -145,30 +145,16 @@ pipeline {
 
         GCOVR_EXE = 'C:\\Users\\Prathemesh\\AppData\\Roaming\\Python\\Python313\\Scripts\\gcovr.exe'
     }
+    stage('CPP Build & Coverage') {
 
     steps {
 
         dir("${CPP_PROJECT}") {
 
             bat """
-            echo ======================================
-            echo CURRENT CPP DIRECTORY
-            echo ======================================
-
-            cd
 
             echo ======================================
-            echo VERIFY TOOLS
-            echo ======================================
-
-            "%CMAKE_EXE%" --version
-
-            "%CTEST_EXE%" --version
-
-            "%GCOVR_EXE%" --version
-
-            echo ======================================
-            echo CLEAN OLD BUILD
+            echo CPP BUILD START
             echo ======================================
 
             if exist build rmdir /s /q build
@@ -178,51 +164,58 @@ pipeline {
             cd build
 
             echo ======================================
-            echo RUN CMAKE
+            echo USING MINGW GCC
             echo ======================================
 
-            "%CMAKE_EXE%" -G "MinGW Makefiles" ..
+            "C:\\Program Files\\CMake\\bin\\cmake.exe" ^
+            -G "MinGW Makefiles" ^
+            -DCMAKE_C_COMPILER=C:/msys64/mingw64/bin/gcc.exe ^
+            -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe ^
+            ..
 
             echo ======================================
-            echo BUILD CPP PROJECT
+            echo BUILDING PROJECT
             echo ======================================
 
-            "%CMAKE_EXE%" --build .
+            "C:\\Program Files\\CMake\\bin\\cmake.exe" --build .
 
             echo ======================================
-            echo RUN TESTS
+            echo RUNNING TESTS
             echo ======================================
 
-            "%CTEST_EXE%" --output-on-failure
-              echo ======================================
-                echo SEARCHING COVERAGE FILES
-                echo ======================================
-
-                dir /s *.gcda
-
-                dir /s *.gcno  
-            echo ======================================
-            echo GENERATE XML COVERAGE
-            echo ======================================
-
-            "%PYTHON_EXE%" -m gcovr -x -o coverage.xml
+            "C:\\Program Files\\CMake\\bin\\ctest.exe" --output-on-failure
 
             echo ======================================
-            echo GENERATE JSON COVERAGE
+            echo SEARCHING COVERAGE FILES
             echo ======================================
 
-            "%PYTHON_EXE%" -m gcovr --json -o coverage.json
+            dir /s *.gcda
+            dir /s *.gcno
+
+            echo ======================================
+            echo GENERATING GCOVR REPORTS
+            echo ======================================
+
+            "C:\\Program Files\\Python313\\python.exe" -m gcovr ^
+            -r .. ^
+            --xml ^
+            -o coverage.xml
+
+            "C:\\Program Files\\Python313\\python.exe" -m gcovr ^
+            -r .. ^
+            --json ^
+            -o coverage.json
 
             echo ======================================
             echo VERIFY GENERATED FILES
             echo ======================================
 
             dir
+
             """
         }
     }
 }
-
         // ============================================
         // VERIFY CPP ARTIFACTS
         // ============================================
