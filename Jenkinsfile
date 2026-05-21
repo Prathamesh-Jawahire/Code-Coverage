@@ -161,6 +161,7 @@ pipeline {
             "%CMAKE_EXE%" ^
             -G "MinGW Makefiles" ^
             -DCMAKE_BUILD_TYPE=Debug ^
+            -DCMAKE_MAKE_PROGRAM=C:/msys64/mingw64/bin/mingw32-make.exe ^
             -DCMAKE_C_COMPILER=C:/msys64/mingw64/bin/gcc.exe ^
             -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe ^
             -DCMAKE_CXX_FLAGS="--coverage -g -O0" ^
