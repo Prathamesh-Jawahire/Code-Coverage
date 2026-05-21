@@ -12,6 +12,7 @@ pipeline {
         JAVA_PROJECT = "Java/JavaFullstackEcommerce"
 
         CPP_PROJECT = "Cpp"
+        PYTHONPATH = "C:\\Users\\Prathemesh\\AppData\\Roaming\\Python\\Python313\\site-packages"
 
         PYTHON_EXE = 'C:\\Program Files\\Python313\\python.exe'
 
